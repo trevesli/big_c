@@ -6,43 +6,39 @@ from matplotlib.colors import ListedColormap, LogNorm
 from scipy.interpolate import interp1d
 from pathlib import Path
 
-def plot_curtain_slice(df, x1, y1, x2, y2, avg_doi, title=str(None), tol=1.0, dz=0.1, method='linear', cmap='rainbow', vmin=None, vmax=None):
+def plot_curtain_slice(df, x1, y1, x2, y2, avg_doi,
+                       title=None, tol=1.0, dz=0.1, method='linear',
+                       dx_bin=1.0, cmap='rainbow', vmin=None, vmax=None):
     """
-    Plot a vertical curtain slice using 1D interpolation at each horizontal location
-    and optionally extrapolate only up to avg_doi.
-
-    pcolormesh is a fast, efficient way to visualize 2D gridded data
-    Unlike imshow, which assumes regularly spaced grids in both directions, 
-    pcolormesh allows non-uniform grids.
-    Provides a continuous surface look instead of a scatter of points.    
-
+    Plot a smooth vertical curtain slice from scattered 3D points.
+    
     Parameters
     ----------
     df : pd.DataFrame
-        Must have columns ['x', 'y', 'z', 'resistivity'].
+        Must have ['x','y','z','resistivity'].
     x1, y1, x2, y2 : float
         Coordinates of the slice line.
     avg_doi : float
-        Maximum allowed extrapolation depth below measured data.
-    tol : float, optional
-        Distance tolerance around the line.
-    dz : float, optional
-        Vertical resolution for plotting grid.
-    method : str, optional
-        Interpolation method: 'linear', 'nearest', 'cubic', etc.
-    cmap : str, optional
-        Colormap for pcolormesh.
-    vmin, vmax : float, optional
-        Min and max for color scale.
-
-    Returns:
-    ----------
-    None: 
-        Displays a 2D curtain plot of resistivity along the slice line.
+        Maximum allowed extrapolation below measured z.
+    tol : float
+        Distance tolerance around slice line (meters).
+    dz : float
+        Vertical resolution (meters).
+    dx_bin : float
+        Horizontal bin width along the slice (meters).
+    method : str
+        Interpolation method: 'linear', 'nearest', 'cubic'.
+    cmap : str
+        Matplotlib colormap.
+    vmin, vmax : float
+        Color scale limits.
+    title : str
+        Plot title.
     """
-    # Compute line vector
+    
+    # Compute slice unit vector
     dx, dy = x2 - x1, y2 - y1
-    line_len = np.sqrt(dx**2 + dy**2)
+    line_len = np.hypot(dx, dy)
     ux, uy = dx / line_len, dy / line_len
 
     # Project points onto line
@@ -51,54 +47,48 @@ def plot_curtain_slice(df, x1, y1, x2, y2, avg_doi, title=str(None), tol=1.0, dz
     dist_along = rel_x * ux + rel_y * uy
     dist_perp = np.abs(-dy*rel_x + dx*rel_y) / line_len
 
-    # Filter points near the line
+    # Keep points near slice
     mask = (dist_perp <= tol) & (dist_along >= 0) & (dist_along <= line_len)
     slice_df = df.loc[mask].copy()
-    slice_df['dist'] = dist_along[mask]
-
     if slice_df.empty:
-        print("No points found along this slice.")
+        print("No points found along slice.")
         return
 
-    # Define grid
-    unique_dist = np.sort(slice_df['dist'].unique())
-    z_min, z_max = slice_df['z'].min(), slice_df['z'].max() + avg_doi
+    # Bin points horizontally
+    slice_df['dist_bin'] = (slice_df['x'] * ux + slice_df['y'] * uy) / dx_bin
+    slice_df['dist_bin'] = np.round(slice_df['dist_bin']) * dx_bin
+    unique_dist = np.sort(slice_df['dist_bin'].unique())
+
+    # Vertical grid
+    z_min = slice_df['z'].min()
+    z_max = slice_df['z'].max() + avg_doi
     z_grid = np.arange(z_min, z_max + dz, dz)
     grid_values = np.full((len(z_grid), len(unique_dist)), np.nan)
 
-    # Interpolate at each horizontal location
+    # Interpolate vertically per horizontal bin
     for i, d in enumerate(unique_dist):
-        col_df = slice_df[slice_df['dist'] == d]
+        col_df = slice_df[slice_df['dist_bin'] == d]
         if len(col_df) >= 2:
             f = interp1d(col_df['z'], col_df['resistivity'],
                          kind=method, bounds_error=False, fill_value=np.nan)
             interp_vals = f(z_grid)
-            
-            # Limit extrapolation below lowest measured z to avg_doi
             min_z_meas = col_df['z'].min()
             interp_vals[z_grid < min_z_meas - avg_doi] = np.nan
-            
             grid_values[:, i] = interp_vals
         elif len(col_df) == 1:
             idx = np.abs(z_grid - col_df['z'].values[0]).argmin()
             grid_values[idx, i] = col_df['resistivity'].values[0]
 
-    # Plot using pcolormesh
-    fig, ax = plt.subplots(figsize=(12, 6))
-    im = ax.pcolormesh(
-        unique_dist, z_grid, grid_values,
-        shading='auto', cmap=cmap,
-        # vmin=vmin, vmax=vmax
-        norm=LogNorm(vmin=vmin, vmax=vmax)
-    )
+    # Plot
+    fig, ax = plt.subplots(figsize=(12,6))
+    im = ax.pcolormesh(unique_dist, z_grid, grid_values,
+                       shading='auto', cmap=cmap,
+                       norm=LogNorm(vmin=vmin, vmax=vmax))
     cbar = fig.colorbar(im, ax=ax, label='Resistivity (Ω·m)')
     ax.set_xlabel('Distance along line (m)')
     ax.set_ylabel('Elevation (m)')
-    if title is None:
-        ax.set_title('Curtain Slice through 3D Subsurface Model')
-    else:
-        ax.set_title(title)
-    ax.set_ylim(z_grid.min() - 0.5, z_grid.max() - 2)
+    ax.set_title(title or 'Curtain Slice through 3D Subsurface Model')
+    ax.set_ylim(z_grid.min(), z_grid.max())
     ax.set_aspect('equal')
     plt.show()
 
