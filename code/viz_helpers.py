@@ -3,6 +3,7 @@ import matplotlib
 import matplotlib.pyplot as plt
 import pyvista as pv
 from matplotlib.colors import ListedColormap, LogNorm
+from matplotlib.ticker import LogLocator, FixedFormatter, FixedLocator
 from scipy.interpolate import interp1d
 from pathlib import Path
 
@@ -58,6 +59,7 @@ def plot_curtain_slice(df, x1, y1, x2, y2, avg_doi,
     slice_df['dist_bin'] = (slice_df['x'] * ux + slice_df['y'] * uy) / dx_bin
     slice_df['dist_bin'] = np.round(slice_df['dist_bin']) * dx_bin
     unique_dist = np.sort(slice_df['dist_bin'].unique())
+    unique_dist_rel = unique_dist - unique_dist.min()
 
     # Vertical grid
     z_min = slice_df['z'].min()
@@ -81,17 +83,32 @@ def plot_curtain_slice(df, x1, y1, x2, y2, avg_doi,
 
     # Plot
     fig, ax = plt.subplots(figsize=(12,6))
-    im = ax.pcolormesh(unique_dist, z_grid, grid_values,
+    im = ax.pcolormesh(unique_dist_rel, z_grid, grid_values,
                        shading='auto', cmap=cmap,
                        norm=LogNorm(vmin=vmin, vmax=vmax))
+    
     cbar = fig.colorbar(im, ax=ax, label='Resistivity (Ω·m)')
-    ax.set_xlabel('Distance along line (m)')
+
+    # Major ticks: powers of 10 within vmin/vmax
+    maj_ticks = np.logspace(np.floor(np.log10(vmin)), np.ceil(np.log10(vmax)), 
+                            num=int(np.ceil(np.log10(vmax)) - np.floor(np.log10(vmin)))+1)
+    maj_ticks = maj_ticks[(maj_ticks >= vmin) & (maj_ticks <= vmax)]  # clip to limits
+    cbar.set_ticks(maj_ticks)
+    cbar.ax.yaxis.set_major_formatter(FixedFormatter([f"{int(tick):d}" for tick in maj_ticks]))
+
+    # Minor ticks: multiples 2-9 of 10^n, also clipped
+    minor_locator = LogLocator(base=10.0, subs=np.arange(2, 10), numticks=100)
+    minor_ticks = minor_locator.tick_values(vmin, vmax)
+    minor_ticks = minor_ticks[(minor_ticks >= vmin) & (minor_ticks <= vmax)]  # clip
+    cbar.ax.yaxis.set_minor_locator(FixedLocator(minor_ticks))
+    cbar.ax.yaxis.set_minor_formatter(FixedFormatter([f"{int(tick):d}" for tick in minor_ticks]))
+
+    ax.set_xlabel('Distance along slice (m)')
     ax.set_ylabel('Elevation (m)')
     ax.set_title(title or 'Curtain Slice through 3D Subsurface Model')
     ax.set_ylim(z_grid.min(), z_grid.max())
     ax.set_aspect('equal')
     plt.show()
-
 
 def voxelise_csv(df, voxel_size, em_survey_date, output_path, origin=None):
     """
