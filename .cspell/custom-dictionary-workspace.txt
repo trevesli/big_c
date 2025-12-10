@@ -1,0 +1,13 @@
+# Custom Dictionary Words
+palaeoriver
+palaeomire
+palaeochannel
+
+# Authors
+desmedt
+vervoort
+weymer
+saey
+salama
+altdorff
+opentopography

@@ -1,0 +1,89 @@
+---
+title: "EPS 215 Independent Project Proposal"
+subtitle: "UC Berkeley, Fall 2025"
+author: "Treves Li"
+format:
+  pdf:
+    sansfont: Latin Modern Roman
+    fontsize: '12'
+    linestretch: '2'
+    geometry: 
+      - top=1in
+      - bottom=1in
+      - left=1in
+      - right=1in
+header-includes:
+  - \usepackage{titlesec}
+  - \titleformat{\section}{\normalfont\Large\bfseries}{\thesection}{1em}{}
+  - \titlespacing*{\section}{0pt}{0em}{-1em}  % {left}{before}{after}
+  - \usepackage{pdfpages}
+execute:
+  echo: false
+bibliography: references.bib
+csl: apa.csl
+---
+
+# Scientific Question
+Can we use electromagnetic induction (EM) to provide reliable, spatially continuous estimates of colluvium depth in hillslope hollow, thus improving our ability to model slope stability and landslide risk?
+
+# Motivation
+Landslide activity in hillslope environments is strongly influenced by both soil moisture conditions and the volume of colluvium stored in the landscape. Accurately characterizing this material is essential for evaluating landslide susceptibility and understanding sediment fluxes emerging from drainage basins [@syvitski_2007]. In concave hollows, colluvium progressively accumulates as soils weather and creep downslope [@lehre_1981; @dietrich_1982]. As soil thickness increases and rainfall events elevate pore-water pressures, these hollows may eventually destabilise and fail catastrophically as debris flows.
+
+We know that soils are thinner on ridges, and that gradually steepening slopes enable thicker soils to accumulate in convergent areas [@mckean_1993; @dietrich_1995]. However, the actual thickness of the colluvium itself is difficult to measure. This presents a major limitation: without reliable estimates of subsurface soil depth, our ability to assess landslide hazards and anticipate slope failures remains constrained.
+
+# Literature Review
+Within the context of geomorphology, hillslopes have been mapped using non-EM geophysical methods for various purposes, such as:
+
+* Seismic refraction to quantify fill deposits in the Bavarian Alps [@schrott_2003].
+* Seismic refraction to identify the basal surface of a deep-seated landslide in the Austrian alps [@bruckl_2006].
+* Electrical resistivity tomography to identify changes to near-surface hydrologic conditions at an active landslide in northeastern England [@boyd_2021].
+
+However, while methods like seismic refraction and Electrical Resistivity Tomography (ERT) offer good depth resolution, they are often labor-intensive and time-consuming to deploy. EM addresses these limitations. This geophysical technique is advantageous since it is non-invasive, rapidly deployable, and highly scalable over kilometres of terrain. EM has been used under the auspices of geomorphology to successfully detect hetereogeneities in soils. Examples in the literature demonstrate EM's application in measuring:
+
+* Salt distribution across Western Australian basins [@salama_1994].
+* Clay extents overlain by Pleistocene loess and Holocene colluvial deposits in Bavaria, Germany [@weller_2007].
+* The pre-glacial landscape obscured by present day loess cover in Belgium [@saey_2008].
+* The detection and reconstruction of a palaeoriver by detecting palaeomire sediments overlain by Quaternary sands in Belgium [@desmedt_2011], and to reconstruct a palaeochannel in New South Wales, Australia [@vervoort_2006].
+* The formation of barrier islands in response to sea-level rise and sediment transport [@weymer_2015].
+
+On one hand we have the scalable and efficient EM method, and on the other hand we have the the critical need to map colluvium and soil moisture in hillslopes for slope stability assessment. The intersection of the method and the geomorphic problem presents a gap in the literature for non-invasively and efficiently mapping colluvial deposits. @altdorff_2014 came closest to addressing this gap by measuring soil properties in the Austrian Alps over a nine-month period. They successfully identified distinct soil layers, which they then used to delineate landslide-susceptible hillslopes. However, their methodology was limited to using only apparent resistivity values. In other words, they used raw data to infer subsurface properties, and they missed the opportunity to create a continuous 3D model of the hillslope by performing a data inversion on the raw values.
+
+# Outcome
+To address this gap, this study will employ EM induction coupled with a full data inversion scheme to produce continuous, three-dimensional models of subsurface resistivity, thereby enabling reliable, non-invasive estimates of colluvium depth in hillslope hollows.
+ 
+# Site
+* The study area is a 180 m² hillslope hollow east of the UC Berkeley campus, located directly upslope of the Foothill Parking Lot and approximately 100 m downslope of the “Big C” (see @fig-site-location).
+* The hollow is a distinct topographic feature and is easily accessible (@fig-site-photo). Although trees appear in @fig-site-location, the trees along the spur ridges have since been cleared.
+* The site presents several challenges: the ~48% slope complicates field surveys; the survey path is biased toward less difficult terrain; and the ground surface is littered with natural (logs, branches, boulders) and anthropogenic (beer cans, broken pipes) debris.
+* The site lies on UC Berkeley property with public access, and no barriers or restrictions were identified that prohibit entry.
+
+![The location of the study site (highlighted in red) shown within the context of eastern UC Berkeley campus. Note the yellow "Big C" uphill of the site, adjacent to the Lawrence Berkeley National Lab structures.](figures/3d_map.png){#fig-site-location width=80%}
+
+![The study area viewed from the bottom of the hollow looking uphill, taken November 23, 2025.](figures/20251123_PB230006_edited.jpg){#fig-site-photo width=80%}
+
+# Method
+The EM survey was conducted using a "ski" system manufactured by Geophex Ltd. This mobile, non-invasive device functions by generating a primary magnetic field through an alternating current. When this primary field interacts with conductive materials in the subsurface (e.g., water-saturated colluvium), eddy currents are induced which in turn generate a secondary magnetic field that is measured by the receiver coils on the device. The depth of investigation is controlled by setting the frequency of the alternating current: higher frequencies correspond to shallower depths (due to smaller wavelengths), while lower frequencies penetrate to greater depths (@fig-em-example-frequency). The raw output from the instrument is an estimate of apparent electrical resistivity.
+
+A key step in data processing involves converting this raw output into a more informative measure of subsurface variability. By applying inversion algorithms, the apparent resistivity is transformed into a continuous profile of either conductivity (measured in millisiemens per metre, mS/m), or its reciprocal, resistivity (measured in ohm-metres, $\Omega\cdot\text{m}$). This conversion moves beyond simple point measurements to provide a continuous profile of subsurface variability with depth (see @fig-em-example-resistivity as an example). The major advantages of this EM method over other geophysical surveying techniques are its high efficiency and scalability, given that the EM system is highly mobile, rapidly deployable, non-invasive, and scalable for surveys ranging from a few meters up to kilometers of terrain.
+
+![An example of a multi-frequency EM "ski" in operation, highlighting the positions of both the transmitter and receiver coils. Multiple frequencies can be set to model the conductivity of the subsurface, with higher frequencies corresponding to shallower depths of investigation, and vice versa.](figures/em_example_frequency.png){#fig-em-example-frequency width=40%}
+
+![An example output from an EM inversion. The raw EM data in parts per million is inverted to generate a resistivity-depth profile of the subsurface. Note that the EM ski is fully decoupled from the ground.](figures/em_example_resistivity.png){#fig-em-example-resistivity width=80%}
+
+The EM survey was designed to transect the hollow multiple times perpendicular to its long axis. The idea is to construct the colluvium volume by connecting these resistivity cross-sections using a spatial interpolation method such as kriging. 
+
+# Data
+* EM data were collected in the field on November 23, 2025.
+* Data collection followed recent rainfall events (@fig-rainfall). The saturated soil was expected to enhance the EM response, since the instrument is more sensitive to conductive materials like wet colluvium (as opposed to drier soils with air-filled and more resistive pores).
+* A 0.5 m resolution Digital Elevation Model (DEM) from the NSF-funded EarthScope Northern California LiDAR project [@opentopography_2008] was used to correct the EM data for topographic elevation.
+
+![Daily and cumulative rainfall data in the 6 months preceding data collection (NOAA). The rainfall event in the week prior to data collection would raise soil moisture levels, which would theoretically produce a stronger EM signal-to-noise ratio. The weather station is approximately 2 km from the site.](figures/rainfall_plot.png){#fig-rainfall}
+
+
+{{< pagebreak >}}
+
+
+
+# References
+::: {#refs}
+:::
