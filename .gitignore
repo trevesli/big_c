@@ -18,9 +18,6 @@ settings.json
 *.aux.xml
 *.tif
 
-# Manuscripts
-/manuscripts/
-
 # Misc folders
 /posters/
 /admin/
@@ -38,8 +35,10 @@ venv/
 *.egg-info/
 .vscode/
 
-# Microsoft Office docs
+# Manuscripts
+/manuscripts/
 /manuscripts/*.docx
+/.cspell/
 
 # Results
 /results/figures/*
