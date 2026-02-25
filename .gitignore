@@ -10,12 +10,16 @@ __pycache__/
 settings.json
 
 # Data
+/data/BerkeleyEMTesting_parker/
 /data/raw/
 /data/processed/
 /gis/
 *.aux
 *.aux.xml
 *.tif
+
+# Manuscripts
+/manuscripts/
 
 # Misc folders
 /posters/
